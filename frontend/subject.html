@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App - Môn học</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .question-item {
+            background: white;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        .question-item.is-flagged {
+            border-left: 4px solid #e74c3c;
+        }
+        .question-item p {
+            color: #2c3e50;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            flex: 1;
+        }
+        .answer-badge {
+            background: #eafaf1;
+            color: #27ae60;
+            border-radius: 6px;
+            padding: 2px 10px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            white-space: nowrap;
+        }
+        .edit-btn {
+            background: none;
+            border: none;
+            color: #3498db;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .edit-btn:hover { background: #ebf5fb; }
+        .unflag-btn {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 2px 6px;
+            border-radius: 6px;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .unflag-btn:hover { background: #fdedec; }
+        .section-title {
+            font-weight: 700;
+            color: #2c3e50;
+            margin: 24px 0 12px;
+            font-size: 1rem;
+        }
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 12px;
+            padding: 28px;
+            width: 90%;
+            max-width: 560px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .modal h2 { margin-bottom: 18px; color: #2c3e50; }
+        .modal-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            min-height: 180px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+        }
+        .modal-textarea:focus { outline: none; border-color: #3498db; }
+        .modal-select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+        }
+        .modal-select:focus { outline: none; border-color: #3498db; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+            <h1 id="subjectTitle">Môn học</h1>
+        </div>
+
+        <div class="card" style="text-align:center">
+            <p class="subtitle" id="questionCount">Đang tải...</p>
+            <div class="btn-group" style="justify-content:center; margin-top:20px">
+                <button class="btn btn-primary" onclick="window.location.href='add-question.html'">
+                    ➕ Thêm câu hỏi
+                </button>
+                <button class="btn btn-success" onclick="window.location.href='quiz.html'">
+                    🎯 Luyện tập
+                </button>
+            </div>
+        </div>
+
+        <div class="section-title" id="listTitle" style="display:none">📋 Danh sách câu hỏi</div>
+        <div id="questionList"></div>
+    </div>
+
+    <!-- Modal chỉnh sửa -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <h2>✏️ Chỉnh sửa câu hỏi</h2>
+            <div class="form-group">
+                <label>📋 Nội dung câu hỏi và đáp án</label>
+                <textarea class="modal-textarea" id="editRawText"></textarea>
+            </div>
+            <div class="form-group" style="margin-top:12px">
+                <label>✅ Đáp án đúng</label>
+                <select class="modal-select" id="editCorrectAnswer">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="C">C</option>
+                    <option value="D">D</option>
+                </select>
+            </div>
+            <div class="btn-group" style="margin-top:16px">
+                <button class="btn btn-primary" onclick="saveEdit()">💾 Lưu thay đổi</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8080/api';
+        const subjectId = localStorage.getItem('subjectId');
+        const subjectName = localStorage.getItem('subjectName');
+        let editingId = null;
+        let allQuestions = [];
+
+        document.getElementById('subjectTitle').textContent = subjectName;
+
+        function getFlaggedIds() {
+            return JSON.parse(localStorage.getItem('flagged_' + subjectId) || '[]');
+        }
+
+        function saveFlaggedIds(ids) {
+            localStorage.setItem('flagged_' + subjectId, JSON.stringify(ids));
+        }
+
+        function unflagQuestion(id) {
+            var flaggedIds = getFlaggedIds();
+            var idx = flaggedIds.indexOf(id);
+            if (idx !== -1) {
+                flaggedIds.splice(idx, 1);
+                saveFlaggedIds(flaggedIds);
+                loadQuestions(); // load lại danh sách
+            }
+        }
+
+        async function loadQuestions() {
+            const res = await fetch(API + '/questions/' + subjectId);
+            allQuestions = await res.json();
+            const flaggedIds = getFlaggedIds();
+
+            document.getElementById('questionCount').textContent =
+                'Hiện có ' + allQuestions.length + ' câu hỏi trong môn này';
+
+            const list = document.getElementById('questionList');
+            const listTitle = document.getElementById('listTitle');
+            list.innerHTML = '';
+
+            if (allQuestions.length === 0) {
+                listTitle.style.display = 'none';
+                list.innerHTML =
+                    '<div class="empty-state">' +
+                    '<div class="icon">📭</div>' +
+                    '<p>Chưa có câu hỏi nào. Hãy thêm câu hỏi đầu tiên!</p>' +
+                    '</div>';
+                return;
+            }
+
+            listTitle.style.display = 'block';
+            allQuestions.forEach(function(q, index) {
+                const isFlagged = flaggedIds.includes(q.id);
+                const div = document.createElement('div');
+                div.className = 'question-item' + (isFlagged ? ' is-flagged' : '');
+
+                div.innerHTML =
+                    '<p><strong>' + (index + 1) + '.</strong> ' +
+                    (isFlagged ? '🚩 ' : '') +
+                    q.questionText + '</p>' +
+                    '<span class="answer-badge">✅ ' + q.correctAnswer + '</span>' +
+             '<button class="edit-btn" title="Chỉnh sửa">✏️</button>' +
+(isFlagged ? '<button class="unflag-btn" title="Bỏ đánh dấu">🚩</button>' : '');
+
+                div.querySelector('.edit-btn').addEventListener('click', function() {
+                    openEditById(q.id);
+                });
+
+                if (isFlagged) {
+                    div.querySelector('.unflag-btn').addEventListener('click', function() {
+                        unflagQuestion(q.id);
+                    });
+                }
+
+                list.appendChild(div);
+            });
+        }
+
+        function openEditById(id) {
+            const q = allQuestions.find(function(x) { return x.id === id; });
+            if (!q) return;
+            editingId = id;
+            document.getElementById('editRawText').value =
+                q.questionText + '\nA) ' + q.optionA +
+                '\nB) ' + q.optionB +
+                '\nC) ' + q.optionC +
+                '\nD) ' + q.optionD;
+            document.getElementById('editCorrectAnswer').value = q.correctAnswer;
+            document.getElementById('editModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            editingId = null;
+        }
+
+        async function saveEdit() {
+            const rawText = document.getElementById('editRawText').value.trim();
+            const correctAnswer = document.getElementById('editCorrectAnswer').value;
+            if (!rawText) { alert('Vui lòng nhập nội dung câu hỏi!'); return; }
+
+            const res = await fetch(API + '/questions/' + editingId, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ rawText: rawText, correctAnswer: correctAnswer })
+            });
+
+            if (res.ok) {
+                closeModal();
+                loadQuestions();
+            } else {
+                alert('Có lỗi xảy ra, vui lòng thử lại!');
+            }
+        }
+
+        loadQuestions();
+    </script>
+</body>
+</html>

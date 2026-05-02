@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App - Luyện tập</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .flag-btn {
+            background: none;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            color: #95a5a6;
+            transition: all 0.2s;
+        }
+        .flag-btn.flagged {
+            border-color: #e74c3c;
+            background: #fdedec;
+            color: #e74c3c;
+        }
+        .question-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="top-bar">
+            <button class="back-btn" onclick="window.location.href='subject.html'">←</button>
+            <h1>🎯 Luyện tập</h1>
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+
+        <div id="quizBox">
+            <div class="question-box">
+                <div class="question-top">
+                    <div class="question-counter" id="questionCounter"></div>
+                    <button class="flag-btn" id="flagBtn" onclick="toggleFlag()">🚩 Đánh dấu</button>
+                </div>
+                <div class="question-text" id="questionText"></div>
+                <div class="options" id="optionsBox"></div>
+            </div>
+        </div>
+
+        <div id="resultBox" style="display:none">
+            <div class="card score-box">
+                <div class="score" id="scoreText"></div>
+                <p id="scoreDesc"></p>
+                <div class="btn-group" style="justify-content:center; margin-top:24px" id="resultBtns"></div>
+            </div>
+        </div>
+
+        <div id="nextBox" style="display:none; text-align:right; margin-top:12px">
+            <button class="btn btn-primary" onclick="nextQuestion()">Tiếp theo ➡</button>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://localhost:8080/api';
+        const subjectId = localStorage.getItem('subjectId');
+
+        let questions = [];
+        let current = 0;
+        let score = 0;
+        let answered = false;
+        let shuffledOptions = [];
+        let wrongQuestions = [];   // câu trả lời sai
+        let flaggedIds = JSON.parse(localStorage.getItem('flagged_' + subjectId) || '[]');
+        let isRetryMode = false;   // đang làm lại câu sai không
+
+        async function loadQuestions() {
+            const res = await fetch(API + '/questions/' + subjectId);
+            questions = await res.json();
+
+            if (questions.length === 0) {
+                document.getElementById('quizBox').innerHTML =
+                    '<div class="empty-state">' +
+                    '<div class="icon">📭</div>' +
+                    '<p>Chưa có câu hỏi nào! Hãy thêm câu hỏi trước.</p>' +
+                    '<br><button class="btn btn-primary" onclick="window.location.href=\'subject.html\'">Quay về</button>' +
+                    '</div>';
+                return;
+            }
+
+            questions = questions.sort(function() { return Math.random() - 0.5; });
+            showQuestion();
+        }
+
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                var temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+            }
+            return arr;
+        }
+
+        function showQuestion() {
+            answered = false;
+            const q = questions[current];
+            const total = questions.length;
+
+            document.getElementById('questionCounter').textContent = 'Câu ' + (current + 1) + ' / ' + total;
+            document.getElementById('questionText').textContent = q.questionText;
+            document.getElementById('progressFill').style.width = ((current / total) * 100) + '%';
+            document.getElementById('nextBox').style.display = 'none';
+
+            // Cập nhật nút cờ
+            var flagBtn = document.getElementById('flagBtn');
+            if (flaggedIds.includes(q.id)) {
+                flagBtn.classList.add('flagged');
+            } else {
+                flagBtn.classList.remove('flagged');
+            }
+
+            var options = [
+                { key: 'A', text: q.optionA },
+                { key: 'B', text: q.optionB },
+                { key: 'C', text: q.optionC },
+                { key: 'D', text: q.optionD }
+            ];
+
+            shuffledOptions = shuffleArray(options);
+            const labels = ['A', 'B', 'C', 'D'];
+            const optionsBox = document.getElementById('optionsBox');
+            optionsBox.innerHTML = '';
+
+            shuffledOptions.forEach(function(opt, index) {
+                const isCorrectOriginal = (opt.key === q.correctAnswer);
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerHTML = '<strong>' + labels[index] + ')</strong> ' + opt.text;
+                btn.addEventListener('click', function() {
+                    selectAnswer(isCorrectOriginal, btn);
+                });
+                optionsBox.appendChild(btn);
+            });
+        }
+
+        function toggleFlag() {
+            const q = questions[current];
+            const flagBtn = document.getElementById('flagBtn');
+            const idx = flaggedIds.indexOf(q.id);
+
+            if (idx === -1) {
+                flaggedIds.push(q.id);
+                flagBtn.classList.add('flagged');
+            } else {
+                flaggedIds.splice(idx, 1);
+                flagBtn.classList.remove('flagged');
+            }
+
+            localStorage.setItem('flagged_' + subjectId, JSON.stringify(flaggedIds));
+        }
+
+        function selectAnswer(isCorrect, clickedBtn) {
+            if (answered) return;
+            answered = true;
+
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(function(b) { b.style.pointerEvents = 'none'; });
+
+            shuffledOptions.forEach(function(opt, index) {
+                if (opt.key === questions[current].correctAnswer) {
+                    allBtns[index].classList.add('correct');
+                }
+            });
+
+            if (isCorrect) {
+                score++;
+            } else {
+                clickedBtn.classList.add('wrong');
+                wrongQuestions.push(questions[current]);
+            }
+
+            document.getElementById('nextBox').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            current++;
+            if (current >= questions.length) {
+                showResult();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('quizBox').style.display = 'none';
+            document.getElementById('nextBox').style.display = 'none';
+            document.getElementById('resultBox').style.display = 'block';
+
+            const total = questions.length;
+            const percent = Math.round((score / total) * 100);
+
+            document.getElementById('scoreText').textContent = score + ' / ' + total;
+            document.getElementById('scoreDesc').textContent =
+                percent >= 80 ? '🎉 Xuất sắc! Bạn đạt ' + percent + '%' :
+                percent >= 60 ? '👍 Khá tốt! Bạn đạt ' + percent + '%' :
+                '💪 Cố gắng hơn nhé! Bạn đạt ' + percent + '%';
+
+            var btns = document.getElementById('resultBtns');
+            btns.innerHTML = '';
+
+            // Nút làm lại câu sai (chỉ hiện ở lượt đầu và có câu sai)
+            if (!isRetryMode && wrongQuestions.length > 0) {
+                var retryBtn = document.createElement('button');
+                retryBtn.className = 'btn btn-warning';
+                retryBtn.textContent = '❌ Làm lại ' + wrongQuestions.length + ' câu sai';
+                retryBtn.addEventListener('click', startRetry);
+                btns.appendChild(retryBtn);
+            }
+
+            var restartBtn = document.createElement('button');
+            restartBtn.className = 'btn btn-primary';
+            restartBtn.textContent = '🔄 Làm lại từ đầu';
+            restartBtn.addEventListener('click', restartQuiz);
+            btns.appendChild(restartBtn);
+
+            var backBtn = document.createElement('button');
+            backBtn.className = 'btn btn-secondary';
+            backBtn.textContent = '🔙 Quay về';
+            backBtn.addEventListener('click', function() { window.location.href = 'subject.html'; });
+            btns.appendChild(backBtn);
+        }
+
+        function startRetry() {
+            isRetryMode = true;
+            questions = wrongQuestions.sort(function() { return Math.random() - 0.5; });
+            wrongQuestions = [];
+            current = 0;
+            score = 0;
+            document.getElementById('quizBox').style.display = 'block';
+            document.getElementById('resultBox').style.display = 'none';
+            showQuestion();
+        }
+
+        function restartQuiz() {
+            isRetryMode = false;
+            wrongQuestions = [];
+            current = 0;
+            score = 0;
+            document.getElementById('quizBox').style.display = 'block';
+            document.getElementById('resultBox').style.display = 'none';
+            questions = questions.sort(function() { return Math.random() - 0.5; });
+            showQuestion();
+        }
+
+        loadQuestions();
+    </script>
+</body>
+</html>

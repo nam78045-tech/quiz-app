@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz App - Trang chủ</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📚 Quiz App</h1>
+        <p class="subtitle">Chọn môn học để bắt đầu luyện tập</p>
+
+        <div id="subjectList" class="subject-list">
+            <!-- Danh sách môn học sẽ load ở đây -->
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display:none">
+            <div class="icon">📖</div>
+            <p>Chưa có môn học nào. Hãy thêm môn học đầu tiên!</p>
+        </div>
+
+        <div style="text-align:center">
+            <button class="btn btn-primary" onclick="openModal()">+ Thêm môn học</button>
+        </div>
+    </div>
+
+    <!-- Modal thêm môn học -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h2>📝 Thêm môn học</h2>
+            <div class="form-group">
+                <label>Tên môn học</label>
+                <input type="text" id="subjectName" placeholder="Ví dụ: Toán, Lý, Hóa..." />
+            </div>
+            <div class="modal .btn-group">
+                <button class="btn btn-primary" onclick="addSubject()">Lưu</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        const API = 'http://localhost:8080/api';
+
+        async function loadSubjects() {
+            const res = await fetch(`${API}/subjects`);
+            const subjects = await res.json();
+            const list = document.getElementById('subjectList');
+            const empty = document.getElementById('emptyState');
+
+            list.innerHTML = '';
+            if (subjects.length === 0) {
+                empty.style.display = 'block';
+                return;
+            }
+            empty.style.display = 'none';
+            subjects.forEach(s => {
+                list.innerHTML += `
+                    <div class="subject-card" onclick="goToSubject(${s.id}, '${s.name}')">
+                        <h3>📘 ${s.name}</h3>
+                    </div>
+                `;
+            });
+        }
+
+        async function addSubject() {
+            const name = document.getElementById('subjectName').value.trim();
+            if (!name) { alert('Vui lòng nhập tên môn học!'); return; }
+
+            await fetch(`${API}/subjects`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+
+            document.getElementById('subjectName').value = '';
+            closeModal();
+            loadSubjects();
+        }
+
+        function goToSubject(id, name) {
+            localStorage.setItem('subjectId', id);
+            localStorage.setItem('subjectName', name);
+            window.location.href = 'subject.html';
+        }
+
+        function openModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        loadSubjects();
+    </script>
+</body>
+</html>
