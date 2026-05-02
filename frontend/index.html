@@ -42,7 +42,9 @@
 
     <script src="app.js"></script>
     <script>
-        const API = 'http://localhost:8080/api';
+        const API = window.location.hostname === 'localhost' 
+    ? 'http://localhost:8080/api' 
+    : 'https://quiz-app-7ch0.onrender.com/api';
 
         async function loadSubjects() {
             const res = await fetch(`${API}/subjects`);

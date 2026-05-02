@@ -54,7 +54,9 @@ D) Huế"></textarea>
     </div>
 
     <script>
-        const API = 'http://localhost:8080/api';
+        const API = window.location.hostname === 'localhost' 
+    ? 'http://localhost:8080/api' 
+    : 'https://quiz-app-7ch0.onrender.com/api';
         const subjectId = localStorage.getItem('subjectId');
 
         async function saveQuestion() {
