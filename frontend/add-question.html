@@ -54,6 +54,12 @@ D) Huế"></textarea>
     </div>
 
     <script>
+        // Chặn user thường
+const role = localStorage.getItem('quiz_role');
+if (role !== 'admin') {
+    alert('Bạn không có quyền truy cập trang này!');
+    window.location.href = 'subject.html';
+}
         const API = window.location.hostname === 'localhost' 
     ? 'http://localhost:8080/api' 
     : 'https://quiz-app-7ch0.onrender.com/api';

@@ -117,7 +117,7 @@
         <div class="card" style="text-align:center">
             <p class="subtitle" id="questionCount">Đang tải...</p>
             <div class="btn-group" style="justify-content:center; margin-top:20px">
-                <button class="btn btn-primary" onclick="window.location.href='add-question.html'">
+                <button id="btnAddQuestion" class="btn btn-primary" style="display:none" onclick="window.location.href='add-question.html'">
                     ➕ Thêm câu hỏi
                 </button>
                 <button class="btn btn-success" onclick="window.location.href='quiz.html'">
@@ -155,15 +155,21 @@
     </div>
 
     <script>
-        const API = window.location.hostname === 'localhost' 
-    ? 'http://localhost:8080/api' 
-    : 'https://quiz-app-7ch0.onrender.com/api';
+        const API = window.location.hostname === 'localhost'
+            ? 'http://localhost:8080/api'
+            : 'https://quiz-app-7ch0.onrender.com/api';
         const subjectId = localStorage.getItem('subjectId');
         const subjectName = localStorage.getItem('subjectName');
+        const role = localStorage.getItem('quiz_role');
         let editingId = null;
         let allQuestions = [];
 
         document.getElementById('subjectTitle').textContent = subjectName;
+
+        // Hiện nút thêm câu hỏi nếu là admin
+        if (role === 'admin') {
+            document.getElementById('btnAddQuestion').style.display = 'inline-block';
+        }
 
         function getFlaggedIds() {
             return JSON.parse(localStorage.getItem('flagged_' + subjectId) || '[]');
@@ -179,7 +185,7 @@
             if (idx !== -1) {
                 flaggedIds.splice(idx, 1);
                 saveFlaggedIds(flaggedIds);
-                loadQuestions(); // load lại danh sách
+                loadQuestions();
             }
         }
 
@@ -216,12 +222,14 @@
                     (isFlagged ? '🚩 ' : '') +
                     q.questionText + '</p>' +
                     '<span class="answer-badge">✅ ' + q.correctAnswer + '</span>' +
-             '<button class="edit-btn" title="Chỉnh sửa">✏️</button>' +
-(isFlagged ? '<button class="unflag-btn" title="Bỏ đánh dấu">🚩</button>' : '');
+                    (role === 'admin' ? '<button class="edit-btn" title="Chỉnh sửa">✏️</button>' : '') +
+                    (isFlagged ? '<button class="unflag-btn" title="Bỏ đánh dấu">🚩</button>' : '');
 
-                div.querySelector('.edit-btn').addEventListener('click', function() {
-                    openEditById(q.id);
-                });
+                if (role === 'admin') {
+                    div.querySelector('.edit-btn').addEventListener('click', function() {
+                        openEditById(q.id);
+                    });
+                }
 
                 if (isFlagged) {
                     div.querySelector('.unflag-btn').addEventListener('click', function() {

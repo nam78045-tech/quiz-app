@@ -5,25 +5,99 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz App - Trang chủ</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        .role-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 20px;
+        }
+        .role-screen h2 {
+            color: #2c3e50;
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        .role-btn {
+            width: 260px;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .role-btn:hover { transform: translateY(-2px); }
+        .role-user { background: #3498db; color: white; }
+        .role-admin { background: #2c3e50; color: white; }
+        .role-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-left: 8px;
+            cursor: pointer;
+        }
+        .badge-user { background: #ebf5fb; color: #3498db; }
+        .badge-admin { background: #2c3e50; color: white; }
+        .pass-box {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            margin-top: 10px;
+        }
+        .pass-box input {
+            padding: 10px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 200px;
+            text-align: center;
+            letter-spacing: 4px;
+        }
+        .pass-box input:focus { outline: none; border-color: #2c3e50; }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>📚 Quiz App</h1>
         <p class="subtitle">Chọn môn học để bắt đầu luyện tập</p>
 
-        <div id="subjectList" class="subject-list">
-            <!-- Danh sách môn học sẽ load ở đây -->
+        <!-- Màn hình chọn role -->
+        <div id="roleScreen" class="role-screen" style="display:none">
+            <h2>Bạn vào với tư cách nào?</h2>
+            <button class="role-btn role-user" onclick="enterAsUser()">👤 User - Làm bài</button>
+            <button class="role-btn role-admin" onclick="showPassBox()">🔐 Admin - Quản lý</button>
+            <div class="pass-box" id="passBox">
+                <input type="password" id="adminPass" placeholder="Nhập password" maxlength="10"
+                    onkeydown="if(event.key==='Enter') checkPass()" />
+                <button class="btn btn-primary" onclick="checkPass()">Xác nhận</button>
+                <p id="passError" style="color:#e74c3c; display:none">Sai password!</p>
+            </div>
         </div>
 
-        <div id="emptyState" class="empty-state" style="display:none">
-            <div class="icon">📖</div>
-            <p>Chưa có môn học nào. Hãy thêm môn học đầu tiên!</p>
-        </div>
+        <!-- Màn hình chính -->
+        <div id="mainScreen" style="display:none">
+            <div style="text-align:right; margin-bottom:8px">
+                <span id="roleBadge" class="role-badge"></span>
+            </div>
 
-        <div style="text-align:center; display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
-    <button class="btn btn-warning" onclick="goToNoteQuiz()">📌 Làm câu đã note</button>
-    <button class="btn btn-primary" onclick="openModal()">+ Thêm môn học</button>
-</div>
+            <div id="subjectList" class="subject-list"></div>
+
+            <div id="emptyState" class="empty-state" style="display:none">
+                <div class="icon">📖</div>
+                <p>Chưa có môn học nào. Hãy thêm môn học đầu tiên!</p>
+            </div>
+
+            <div style="text-align:center; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px">
+                <button class="btn btn-warning" onclick="goToNoteQuiz()">📌 Làm câu đã note</button>
+                <button class="btn btn-primary" id="btnAddSubject" style="display:none" onclick="openModal()">+ Thêm môn học</button>
+            </div>
+        </div>
     </div>
 
     <!-- Modal thêm môn học -->
@@ -43,15 +117,75 @@
 
     <script src="app.js"></script>
     <script>
-        const API = window.location.hostname === 'localhost' 
-    ? 'http://localhost:8080/api' 
-    : 'https://quiz-app-7ch0.onrender.com/api';
+        const API = window.location.hostname === 'localhost'
+            ? 'http://localhost:8080/api'
+            : 'https://quiz-app-7ch0.onrender.com/api';
+        const ADMIN_PASS = '0305';
+
+        // Kiểm tra role đã lưu chưa
+        window.onload = function() {
+            const role = localStorage.getItem('quiz_role');
+            if (role === 'admin' || role === 'user') {
+                showMain(role);
+            } else {
+                document.getElementById('roleScreen').style.display = 'flex';
+            }
+        }
+
+        function enterAsUser() {
+            localStorage.setItem('quiz_role', 'user');
+            showMain('user');
+        }
+
+        function showPassBox() {
+            document.getElementById('passBox').style.display = 'flex';
+            document.getElementById('adminPass').focus();
+        }
+
+        function checkPass() {
+            const pass = document.getElementById('adminPass').value;
+            if (pass === ADMIN_PASS) {
+                localStorage.setItem('quiz_role', 'admin');
+                showMain('admin');
+            } else {
+                document.getElementById('passError').style.display = 'block';
+                document.getElementById('adminPass').value = '';
+            }
+        }
+
+        function showMain(role) {
+            document.getElementById('roleScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'block';
+
+            const badge = document.getElementById('roleBadge');
+            if (role === 'admin') {
+                badge.textContent = '🔐 Admin';
+                badge.className = 'role-badge badge-admin';
+                document.getElementById('btnAddSubject').style.display = 'inline-block';
+            } else {
+                badge.textContent = '👤 User';
+                badge.className = 'role-badge badge-user';
+                document.getElementById('btnAddSubject').style.display = 'none';
+            }
+            badge.title = 'Bấm để đổi role';
+            badge.onclick = switchRole;
+
+            loadSubjects();
+        }
+
+        function switchRole() {
+            if (confirm('Bạn muốn đổi role? Sẽ về màn hình chọn lại.')) {
+                localStorage.removeItem('quiz_role');
+                location.reload();
+            }
+        }
 
         async function loadSubjects() {
             const res = await fetch(`${API}/subjects`);
             const subjects = await res.json();
             const list = document.getElementById('subjectList');
             const empty = document.getElementById('emptyState');
+            const role = localStorage.getItem('quiz_role');
 
             list.innerHTML = '';
             if (subjects.length === 0) {
@@ -89,15 +223,7 @@
             window.location.href = 'subject.html';
         }
 
-        function openModal() {
-            document.getElementById('modalOverlay').classList.add('active');
-        }
-
-        function closeModal() {
-            document.getElementById('modalOverlay').classList.remove('active');
-        }
-
-       function goToNoteQuiz() {
+        function goToNoteQuiz() {
             const notedIds = JSON.parse(localStorage.getItem('noted_questions') || '[]');
             if (notedIds.length === 0) {
                 alert('Bạn chưa note câu hỏi nào!');
@@ -105,7 +231,9 @@
             }
             window.location.href = 'note-quiz.html';
         }
-         loadSubjects();
+
+        function openModal() { document.getElementById('modalOverlay').classList.add('active'); }
+        function closeModal() { document.getElementById('modalOverlay').classList.remove('active'); }
     </script>
 </body>
 </html>
