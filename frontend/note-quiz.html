@@ -3,24 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz App - Luyện tập</title>
+    <title>Quiz App - Câu đã note</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .flag-btn {
-            background: none;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #95a5a6;
-            transition: all 0.2s;
-        }
-        .flag-btn.flagged {
-            border-color: #e74c3c;
-            background: #fdedec;
-            color: #e74c3c;
-        }
         .note-btn {
             background: none;
             border: 2px solid #e0e0e0;
@@ -47,8 +32,8 @@
 <body>
     <div class="container">
         <div class="top-bar">
-            <button class="back-btn" onclick="window.location.href='subject.html'">←</button>
-            <h1>🎯 Luyện tập</h1>
+            <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+            <h1>📌 Câu đã note</h1>
         </div>
 
         <div class="progress-bar">
@@ -59,10 +44,7 @@
             <div class="question-box">
                 <div class="question-top">
                     <div class="question-counter" id="questionCounter"></div>
-                    <div style="display:flex; gap:8px">
-                        <button class="note-btn" id="noteBtn" onclick="toggleNote()">📌 Note</button>
-                        <button class="flag-btn" id="flagBtn" onclick="toggleFlag()">🚩 Đánh dấu</button>
-                    </div>
+                    <button class="note-btn noted" id="noteBtn" onclick="toggleNote()">📌 Note</button>
                 </div>
                 <div class="question-text" id="questionText"></div>
                 <div class="options" id="optionsBox"></div>
@@ -86,7 +68,6 @@
         const API = window.location.hostname === 'localhost'
             ? 'http://localhost:8080/api'
             : 'https://quiz-app-7ch0.onrender.com/api';
-        const subjectId = localStorage.getItem('subjectId');
 
         let questions = [];
         let current = 0;
@@ -94,20 +75,40 @@
         let answered = false;
         let shuffledOptions = [];
         let wrongQuestions = [];
-        let flaggedIds = JSON.parse(localStorage.getItem('flagged_' + subjectId) || '[]');
-        let notedIds = JSON.parse(localStorage.getItem('noted_questions') || '[]');
         let isRetryMode = false;
+        let notedIds = JSON.parse(localStorage.getItem('noted_questions') || '[]');
 
-        async function loadQuestions() {
-            const res = await fetch(API + '/questions/' + subjectId);
-            questions = await res.json();
+        async function loadNoteQuestions() {
+            if (notedIds.length === 0) {
+                document.getElementById('quizBox').innerHTML =
+                    '<div class="empty-state">' +
+                    '<div class="icon">📭</div>' +
+                    '<p>Chưa có câu nào được note!</p>' +
+                    '<br><button class="btn btn-primary" onclick="window.location.href=\'index.html\'">Quay về</button>' +
+                    '</div>';
+                return;
+            }
+
+            const subjectsRes = await fetch(API + '/subjects');
+            const subjects = await subjectsRes.json();
+
+            let allQuestions = [];
+            for (const s of subjects) {
+                const res = await fetch(API + '/questions/' + s.id);
+                const qs = await res.json();
+                allQuestions = allQuestions.concat(qs);
+            }
+
+            questions = allQuestions.filter(function(q) {
+                return notedIds.includes(q.id);
+            });
 
             if (questions.length === 0) {
                 document.getElementById('quizBox').innerHTML =
                     '<div class="empty-state">' +
                     '<div class="icon">📭</div>' +
-                    '<p>Chưa có câu hỏi nào! Hãy thêm câu hỏi trước.</p>' +
-                    '<br><button class="btn btn-primary" onclick="window.location.href=\'subject.html\'">Quay về</button>' +
+                    '<p>Không tìm thấy câu đã note!</p>' +
+                    '<br><button class="btn btn-primary" onclick="window.location.href=\'index.html\'">Quay về</button>' +
                     '</div>';
                 return;
             }
@@ -134,15 +135,6 @@
             document.getElementById('progressFill').style.width = ((current / total) * 100) + '%';
             document.getElementById('nextBox').style.display = 'none';
 
-            // Cập nhật nút cờ
-            var flagBtn = document.getElementById('flagBtn');
-            if (flaggedIds.includes(q.id)) {
-                flagBtn.classList.add('flagged');
-            } else {
-                flagBtn.classList.remove('flagged');
-            }
-
-            // Cập nhật nút note
             var noteBtn = document.getElementById('noteBtn');
             if (notedIds.includes(q.id)) {
                 noteBtn.classList.add('noted');
@@ -172,21 +164,6 @@
                 });
                 optionsBox.appendChild(btn);
             });
-        }
-
-        function toggleFlag() {
-            const q = questions[current];
-            const flagBtn = document.getElementById('flagBtn');
-            const idx = flaggedIds.indexOf(q.id);
-
-            if (idx === -1) {
-                flaggedIds.push(q.id);
-                flagBtn.classList.add('flagged');
-            } else {
-                flaggedIds.splice(idx, 1);
-                flagBtn.classList.remove('flagged');
-            }
-            localStorage.setItem('flagged_' + subjectId, JSON.stringify(flaggedIds));
         }
 
         function toggleNote() {
@@ -270,7 +247,7 @@
             var backBtn = document.createElement('button');
             backBtn.className = 'btn btn-secondary';
             backBtn.textContent = '🔙 Quay về';
-            backBtn.addEventListener('click', function() { window.location.href = 'subject.html'; });
+            backBtn.addEventListener('click', function() { window.location.href = 'index.html'; });
             btns.appendChild(backBtn);
         }
 
@@ -296,7 +273,7 @@
             showQuestion();
         }
 
-        loadQuestions();
+        loadNoteQuestions();
     </script>
 </body>
 </html>

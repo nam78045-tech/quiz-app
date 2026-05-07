@@ -20,9 +20,10 @@
             <p>Chưa có môn học nào. Hãy thêm môn học đầu tiên!</p>
         </div>
 
-        <div style="text-align:center">
-            <button class="btn btn-primary" onclick="openModal()">+ Thêm môn học</button>
-        </div>
+        <div style="text-align:center; display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+    <button class="btn btn-warning" onclick="goToNoteQuiz()">📌 Làm câu đã note</button>
+    <button class="btn btn-primary" onclick="openModal()">+ Thêm môn học</button>
+</div>
     </div>
 
     <!-- Modal thêm môn học -->
@@ -96,7 +97,15 @@
             document.getElementById('modalOverlay').classList.remove('active');
         }
 
-        loadSubjects();
+       function goToNoteQuiz() {
+            const notedIds = JSON.parse(localStorage.getItem('noted_questions') || '[]');
+            if (notedIds.length === 0) {
+                alert('Bạn chưa note câu hỏi nào!');
+                return;
+            }
+            window.location.href = 'note-quiz.html';
+        }
+         loadSubjects();
     </script>
 </body>
 </html>
