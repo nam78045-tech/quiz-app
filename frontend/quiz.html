@@ -6,62 +6,166 @@
     <title>Quiz App - Luyện tập</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        .flag-btn {
-            background: none;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #95a5a6;
-            transition: all 0.2s;
-        }
-        .flag-btn.flagged {
-            border-color: #e74c3c;
-            background: #fdedec;
-            color: #e74c3c;
-        }
-        .note-btn {
-            background: none;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 1rem;
-            color: #95a5a6;
-            transition: all 0.2s;
-        }
-        .note-btn.noted {
-            border-color: #f39c12;
-            background: #fef9e7;
-            color: #f39c12;
-        }
-        .question-top {
+        .quiz-meta {
             display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .quiz-subject-label {
+            font-size: 11px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+        .quiz-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-flag-sm {
+            background: rgba(239,68,68,0.08);
+            color: #94a3b8;
+            border: 1px solid rgba(100,116,139,0.25);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-flag-sm.flagged {
+            background: rgba(239,68,68,0.12);
+            color: #f87171;
+            border-color: rgba(239,68,68,0.35);
+        }
+        .btn-flag-sm:hover { background: rgba(239,68,68,0.15); }
+
+        .btn-note-sm {
+            background: rgba(245,158,11,0.08);
+            color: #94a3b8;
+            border: 1px solid rgba(100,116,139,0.25);
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-note-sm.noted {
+            background: rgba(245,158,11,0.12);
+            color: #fbbf24;
+            border-color: rgba(245,158,11,0.35);
+        }
+        .btn-note-sm:hover { background: rgba(245,158,11,0.15); }
+
+        .question-box {
+            background: rgba(15,23,42,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 14px;
+            padding: 24px 28px;
+            border: 1px solid rgba(99,102,241,0.2);
+            margin-bottom: 16px;
+        }
+        .question-counter {
+            font-size: 12px;
+            color: #475569;
+        }
+        .question-text {
+            font-size: 1rem;
+            color: #cbd5e1;
+            line-height: 1.7;
+            margin: 16px 0 18px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 9px;
+        }
+        .option-btn {
+            background: rgba(30,41,59,0.6);
+            border: 1px solid rgba(30,41,59,0.9);
+            border-radius: 10px;
+            padding: 11px 16px;
+            text-align: left;
+            font-size: 0.92rem;
+            color: #94a3b8;
+            cursor: pointer;
+            transition: all 0.18s;
+            font-family: inherit;
+        }
+        .option-btn:hover:not(:disabled) {
+            border-color: rgba(99,102,241,0.45);
+            color: #a5b4fc;
+            background: rgba(99,102,241,0.08);
+        }
+        .option-btn.correct {
+            border-color: rgba(16,185,129,0.5);
+            background: rgba(16,185,129,0.08);
+            color: #34d399;
+            font-weight: 600;
+        }
+        .option-btn.wrong {
+            border-color: rgba(239,68,68,0.5);
+            background: rgba(239,68,68,0.08);
+            color: #f87171;
+        }
+
+        .next-bar {
+            display: none;
+            justify-content: flex-end;
+            margin-top: 4px;
+        }
+
+        /* Result */
+        .result-card {
+            background: rgba(15,23,42,0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 14px;
+            padding: 48px 28px;
+            border: 1px solid rgba(99,102,241,0.2);
+            text-align: center;
+        }
+        .score-big {
+            font-size: 3.8rem;
+            font-weight: 700;
+            color: #6366f1;
+            letter-spacing: -1px;
+        }
+        .score-desc {
+            color: #64748b;
+            margin-top: 10px;
+            font-size: 1rem;
+        }
+        .result-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 28px;
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- Top bar -->
         <div class="top-bar">
             <button class="back-btn" onclick="window.location.href='subject.html'">←</button>
-            <h1>🎯 Luyện tập</h1>
+            <h1 style="font-size:1.3rem; margin:0">🎯 Luyện tập</h1>
         </div>
 
-        <div class="progress-bar">
+        <!-- Progress -->
+        <div class="progress-bar" style="margin-bottom:20px">
             <div class="progress-fill" id="progressFill" style="width:0%"></div>
         </div>
 
+        <!-- Quiz box -->
         <div id="quizBox">
             <div class="question-box">
-                <div class="question-top">
-                    <div class="question-counter" id="questionCounter"></div>
-                    <div style="display:flex; gap:8px">
-                        <button class="note-btn" id="noteBtn" onclick="toggleNote()">📌 Note</button>
-                        <button class="flag-btn" id="flagBtn" onclick="toggleFlag()">🚩 Đánh dấu</button>
+                <div class="quiz-meta">
+                    <span class="question-counter" id="questionCounter"></span>
+                    <div class="quiz-actions">
+                        <button class="btn-note-sm" id="noteBtn" onclick="toggleNote()">📌 Note</button>
+                        <button class="btn-flag-sm" id="flagBtn" onclick="toggleFlag()">🚩 Đánh dấu</button>
                     </div>
                 </div>
                 <div class="question-text" id="questionText"></div>
@@ -69,16 +173,18 @@
             </div>
         </div>
 
-        <div id="resultBox" style="display:none">
-            <div class="card score-box">
-                <div class="score" id="scoreText"></div>
-                <p id="scoreDesc"></p>
-                <div class="btn-group" style="justify-content:center; margin-top:24px" id="resultBtns"></div>
-            </div>
+        <!-- Next button -->
+        <div id="nextBox" class="next-bar">
+            <button class="btn btn-primary" onclick="nextQuestion()">Tiếp theo ➡</button>
         </div>
 
-        <div id="nextBox" style="display:none; text-align:right; margin-top:12px">
-            <button class="btn btn-primary" onclick="nextQuestion()">Tiếp theo ➡</button>
+        <!-- Result box -->
+        <div id="resultBox" style="display:none">
+            <div class="result-card">
+                <div class="score-big" id="scoreText"></div>
+                <p class="score-desc" id="scoreDesc"></p>
+                <div class="result-actions" id="resultBtns"></div>
+            </div>
         </div>
     </div>
 
@@ -119,7 +225,7 @@
         function shuffleArray(arr) {
             for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
-                var temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+                var t = arr[i]; arr[i] = arr[j]; arr[j] = t;
             }
             return arr;
         }
@@ -129,26 +235,22 @@
             const q = questions[current];
             const total = questions.length;
 
-            document.getElementById('questionCounter').textContent = 'Câu ' + (current + 1) + ' / ' + total;
+            document.getElementById('questionCounter').textContent =
+                'Câu ' + (current + 1) + ' / ' + total;
             document.getElementById('questionText').textContent = q.questionText;
-            document.getElementById('progressFill').style.width = ((current / total) * 100) + '%';
-            document.getElementById('nextBox').style.display = 'none';
+            document.getElementById('progressFill').style.width =
+                ((current / total) * 100) + '%';
 
-            // Cập nhật nút cờ
+            var nextBox = document.getElementById('nextBox');
+            nextBox.style.display = 'none';
+
+            // Flag button state
             var flagBtn = document.getElementById('flagBtn');
-            if (flaggedIds.includes(q.id)) {
-                flagBtn.classList.add('flagged');
-            } else {
-                flagBtn.classList.remove('flagged');
-            }
+            flagBtn.className = 'btn-flag-sm' + (flaggedIds.includes(q.id) ? ' flagged' : '');
 
-            // Cập nhật nút note
+            // Note button state
             var noteBtn = document.getElementById('noteBtn');
-            if (notedIds.includes(q.id)) {
-                noteBtn.classList.add('noted');
-            } else {
-                noteBtn.classList.remove('noted');
-            }
+            noteBtn.className = 'btn-note-sm' + (notedIds.includes(q.id) ? ' noted' : '');
 
             var options = [
                 { key: 'A', text: q.optionA },
@@ -156,8 +258,8 @@
                 { key: 'C', text: q.optionC },
                 { key: 'D', text: q.optionD }
             ];
-
             shuffledOptions = shuffleArray(options);
+
             const labels = ['A', 'B', 'C', 'D'];
             const optionsBox = document.getElementById('optionsBox');
             optionsBox.innerHTML = '';
@@ -178,13 +280,12 @@
             const q = questions[current];
             const flagBtn = document.getElementById('flagBtn');
             const idx = flaggedIds.indexOf(q.id);
-
             if (idx === -1) {
                 flaggedIds.push(q.id);
-                flagBtn.classList.add('flagged');
+                flagBtn.className = 'btn-flag-sm flagged';
             } else {
                 flaggedIds.splice(idx, 1);
-                flagBtn.classList.remove('flagged');
+                flagBtn.className = 'btn-flag-sm';
             }
             localStorage.setItem('flagged_' + subjectId, JSON.stringify(flaggedIds));
         }
@@ -193,13 +294,12 @@
             const q = questions[current];
             const noteBtn = document.getElementById('noteBtn');
             const idx = notedIds.indexOf(q.id);
-
             if (idx === -1) {
                 notedIds.push(q.id);
-                noteBtn.classList.add('noted');
+                noteBtn.className = 'btn-note-sm noted';
             } else {
                 notedIds.splice(idx, 1);
-                noteBtn.classList.remove('noted');
+                noteBtn.className = 'btn-note-sm';
             }
             localStorage.setItem('noted_questions', JSON.stringify(notedIds));
         }
@@ -209,7 +309,7 @@
             answered = true;
 
             const allBtns = document.querySelectorAll('.option-btn');
-            allBtns.forEach(function(b) { b.style.pointerEvents = 'none'; });
+            allBtns.forEach(function(b) { b.disabled = true; });
 
             shuffledOptions.forEach(function(opt, index) {
                 if (opt.key === questions[current].correctAnswer) {
@@ -224,7 +324,8 @@
                 wrongQuestions.push(questions[current]);
             }
 
-            document.getElementById('nextBox').style.display = 'block';
+            var nextBox = document.getElementById('nextBox');
+            nextBox.style.display = 'flex';
         }
 
         function nextQuestion() {
@@ -270,7 +371,9 @@
             var backBtn = document.createElement('button');
             backBtn.className = 'btn btn-secondary';
             backBtn.textContent = '🔙 Quay về';
-            backBtn.addEventListener('click', function() { window.location.href = 'subject.html'; });
+            backBtn.addEventListener('click', function() {
+                window.location.href = 'subject.html';
+            });
             btns.appendChild(backBtn);
         }
 
@@ -278,8 +381,7 @@
             isRetryMode = true;
             questions = wrongQuestions.sort(function() { return Math.random() - 0.5; });
             wrongQuestions = [];
-            current = 0;
-            score = 0;
+            current = 0; score = 0;
             document.getElementById('quizBox').style.display = 'block';
             document.getElementById('resultBox').style.display = 'none';
             showQuestion();
@@ -288,8 +390,7 @@
         function restartQuiz() {
             isRetryMode = false;
             wrongQuestions = [];
-            current = 0;
-            score = 0;
+            current = 0; score = 0;
             document.getElementById('quizBox').style.display = 'block';
             document.getElementById('resultBox').style.display = 'none';
             questions = questions.sort(function() { return Math.random() - 0.5; });

@@ -12,77 +12,112 @@
             align-items: center;
             justify-content: center;
             min-height: 60vh;
-            gap: 20px;
+            gap: 16px;
         }
         .role-screen h2 {
-            color: #2c3e50;
-            font-size: 1.5rem;
-            margin-bottom: 10px;
+            color: #94a3b8;
+            font-size: 1.1rem;
+            font-weight: 400;
+            margin-bottom: 8px;
         }
         .role-btn {
             width: 260px;
             padding: 16px;
             border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            border: none;
+            font-size: 1rem;
+            font-weight: 500;
             cursor: pointer;
             transition: all 0.2s;
         }
         .role-btn:hover { transform: translateY(-2px); }
-        .role-user { background: #3498db; color: white; }
-        .role-admin { background: #2c3e50; color: white; }
-        .role-badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-left: 8px;
-            cursor: pointer;
+        .role-user {
+            background: rgba(99,102,241,0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99,102,241,0.35);
         }
-        .badge-user { background: #ebf5fb; color: #3498db; }
-        .badge-admin { background: #2c3e50; color: white; }
+        .role-user:hover { background: rgba(99,102,241,0.25); }
+        .role-admin {
+            background: rgba(15,23,42,0.8);
+            color: #94a3b8;
+            border: 1px solid rgba(100,116,139,0.3);
+        }
+        .role-admin:hover { background: rgba(30,41,59,0.8); }
         .pass-box {
             display: none;
             flex-direction: column;
             align-items: center;
-            gap: 12px;
-            margin-top: 10px;
+            gap: 10px;
+            margin-top: 6px;
         }
         .pass-box input {
             padding: 10px 16px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid rgba(99,102,241,0.3);
             border-radius: 8px;
             font-size: 1rem;
             width: 200px;
             text-align: center;
-            letter-spacing: 4px;
+            letter-spacing: 6px;
+            background: rgba(15,23,42,0.8);
+            color: #e2e8f0;
         }
-        .pass-box input:focus { outline: none; border-color: #2c3e50; }
+        .pass-box input:focus { outline: none; border-color: #6366f1; }
+        .role-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .badge-user {
+            background: rgba(99,102,241,0.1);
+            color: #a5b4fc;
+            border: 1px solid rgba(99,102,241,0.3);
+        }
+        .badge-admin {
+            background: rgba(99,102,241,0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99,102,241,0.4);
+        }
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+        .app-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📚 Quiz App</h1>
-        <p class="subtitle">Chọn môn học để bắt đầu luyện tập</p>
 
         <!-- Màn hình chọn role -->
         <div id="roleScreen" class="role-screen" style="display:none">
-            <h2>Bạn vào với tư cách nào?</h2>
-            <button class="role-btn role-user" onclick="enterAsUser()">👤 User - Làm bài</button>
-            <button class="role-btn role-admin" onclick="showPassBox()">🔐 Admin - Quản lý</button>
+            <h1>📚 Quiz App</h1>
+            <p class="subtitle">Bạn vào với tư cách nào?</p>
+            <button class="role-btn role-user" onclick="enterAsUser()">👤 User — Làm bài</button>
+            <button class="role-btn role-admin" onclick="showPassBox()">🔐 Admin — Quản lý</button>
             <div class="pass-box" id="passBox">
-                <input type="password" id="adminPass" placeholder="Nhập password" maxlength="10"
+                <input type="password" id="adminPass" placeholder="Mật khẩu" maxlength="10"
                     onkeydown="if(event.key==='Enter') checkPass()" />
                 <button class="btn btn-primary" onclick="checkPass()">Xác nhận</button>
-                <p id="passError" style="color:#e74c3c; display:none">Sai password!</p>
+                <p id="passError" style="color:#f87171; font-size:13px; display:none">Sai mật khẩu!</p>
             </div>
         </div>
 
         <!-- Màn hình chính -->
         <div id="mainScreen" style="display:none">
-            <div style="text-align:right; margin-bottom:8px">
+            <div class="topbar">
+                <div class="app-title">
+                    <h1 style="text-align:left; margin:0; font-size:1.5rem">📚 Quiz App</h1>
+                </div>
                 <span id="roleBadge" class="role-badge"></span>
             </div>
 
@@ -93,7 +128,7 @@
                 <p>Chưa có môn học nào. Hãy thêm môn học đầu tiên!</p>
             </div>
 
-            <div style="text-align:center; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:16px">
+            <div style="text-align:center; display:flex; gap:12px; justify-content:center; flex-wrap:wrap; margin-top:8px">
                 <button class="btn btn-warning" onclick="goToNoteQuiz()">📌 Làm câu đã note</button>
                 <button class="btn btn-primary" id="btnAddSubject" style="display:none" onclick="openModal()">+ Thêm môn học</button>
             </div>
@@ -108,7 +143,7 @@
                 <label>Tên môn học</label>
                 <input type="text" id="subjectName" placeholder="Ví dụ: Toán, Lý, Hóa..." />
             </div>
-            <div class="modal .btn-group">
+            <div class="btn-group">
                 <button class="btn btn-primary" onclick="addSubject()">Lưu</button>
                 <button class="btn btn-secondary" onclick="closeModal()">Hủy</button>
             </div>
@@ -122,7 +157,6 @@
             : 'https://quiz-app-7ch0.onrender.com/api';
         const ADMIN_PASS = '0305';
 
-        // Kiểm tra role đã lưu chưa
         window.onload = function() {
             const role = localStorage.getItem('quiz_role');
             if (role === 'admin' || role === 'user') {
@@ -139,7 +173,7 @@
 
         function showPassBox() {
             document.getElementById('passBox').style.display = 'flex';
-            document.getElementById('adminPass').focus();
+            setTimeout(function() { document.getElementById('adminPass').focus(); }, 100);
         }
 
         function checkPass() {
@@ -181,11 +215,10 @@
         }
 
         async function loadSubjects() {
-            const res = await fetch(`${API}/subjects`);
+            const res = await fetch(API + '/subjects');
             const subjects = await res.json();
             const list = document.getElementById('subjectList');
             const empty = document.getElementById('emptyState');
-            const role = localStorage.getItem('quiz_role');
 
             list.innerHTML = '';
             if (subjects.length === 0) {
@@ -193,12 +226,18 @@
                 return;
             }
             empty.style.display = 'none';
-            subjects.forEach(s => {
-                list.innerHTML += `
-                    <div class="subject-card" onclick="goToSubject(${s.id}, '${s.name}')">
-                        <h3>📘 ${s.name}</h3>
-                    </div>
-                `;
+
+            const colors = ['rgba(99,102,241,0.25)', 'rgba(14,165,233,0.25)', 'rgba(16,185,129,0.25)', 'rgba(167,139,250,0.25)', 'rgba(236,72,153,0.25)'];
+            const borders = ['rgba(99,102,241,0.5)', 'rgba(14,165,233,0.5)', 'rgba(16,185,129,0.5)', 'rgba(167,139,250,0.5)', 'rgba(236,72,153,0.5)'];
+
+            subjects.forEach(function(s, i) {
+                const c = i % colors.length;
+                const div = document.createElement('div');
+                div.className = 'subject-card';
+                div.style.borderColor = borders[c];
+                div.innerHTML = '<h3>📘 ' + s.name + '</h3>';
+                div.onclick = function() { goToSubject(s.id, s.name); };
+                list.appendChild(div);
             });
         }
 
@@ -206,10 +245,10 @@
             const name = document.getElementById('subjectName').value.trim();
             if (!name) { alert('Vui lòng nhập tên môn học!'); return; }
 
-            await fetch(`${API}/subjects`, {
+            await fetch(API + '/subjects', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
+                body: JSON.stringify({ name: name })
             });
 
             document.getElementById('subjectName').value = '';

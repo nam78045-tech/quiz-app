@@ -10,7 +10,7 @@
     <div class="container">
         <div class="top-bar">
             <button class="back-btn" onclick="window.location.href='subject.html'">←</button>
-            <h1>➕ Thêm câu hỏi</h1>
+            <h1 style="text-align:left; font-size:1.4rem; margin:0">➕ Thêm câu hỏi</h1>
         </div>
 
         <div class="card">
@@ -39,9 +39,8 @@ D) Huế"></textarea>
             </div>
         </div>
 
-        <!-- Hiện ra sau khi lưu thành công -->
         <div id="successBox" class="card" style="display:none; text-align:center">
-            <p style="font-size:1.2rem; color:#27ae60; margin-bottom:16px">
+            <p style="font-size:1.1rem; color:#34d399; margin-bottom:16px">
                 ✅ Đã lưu câu hỏi thành công!
             </p>
             <div class="btn-group" style="justify-content:center">
@@ -55,14 +54,15 @@ D) Huế"></textarea>
 
     <script>
         // Chặn user thường
-const role = localStorage.getItem('quiz_role');
-if (role !== 'admin') {
-    alert('Bạn không có quyền truy cập trang này!');
-    window.location.href = 'subject.html';
-}
-        const API = window.location.hostname === 'localhost' 
-    ? 'http://localhost:8080/api' 
-    : 'https://quiz-app-7ch0.onrender.com/api';
+        const role = localStorage.getItem('quiz_role');
+        if (role !== 'admin') {
+            alert('Bạn không có quyền truy cập trang này!');
+            window.location.href = 'subject.html';
+        }
+
+        const API = window.location.hostname === 'localhost'
+            ? 'http://localhost:8080/api'
+            : 'https://quiz-app-7ch0.onrender.com/api';
         const subjectId = localStorage.getItem('subjectId');
 
         async function saveQuestion() {
@@ -74,7 +74,7 @@ if (role !== 'admin') {
                 return;
             }
 
-            const res = await fetch(`${API}/questions`, {
+            const res = await fetch(API + '/questions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ subjectId, rawText, correctAnswer })
