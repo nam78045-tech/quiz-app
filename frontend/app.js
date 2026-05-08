@@ -17,7 +17,7 @@
         button.title = isLight ? 'Chuyen sang giao dien toi' : 'Chuyen sang giao dien sang';
         button.innerHTML =
             '<span class="theme-icon">' + (isLight ? '☀️' : '🌙') + '</span>' +
-            '<span>' + (isLight ? 'Sang' : 'Toi') + '</span>';
+            '<span>' + (isLight ? 'Sáng' : 'Tối') + '</span>';
     }
 
     function createToggle() {
