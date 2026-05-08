@@ -45,7 +45,8 @@ h1 {
 
 .subtitle {
     text-align: center;
-    color: #475569;
+    color: #94a3b8;
+    font-weight: 600;
     margin-bottom: 30px;
 }
 
@@ -248,7 +249,8 @@ h1 {
     cursor: pointer;
     text-align: left;
     font-size: 0.95rem;
-    color: #94a3b8;
+    color: #cbd5e1;
+    font-weight: 600;
     transition: all 0.2s;
 }
 .option-btn:hover {
@@ -291,7 +293,8 @@ h1 {
     color: #6366f1;
 }
 .score-box p {
-    color: #64748b;
+    color: #94a3b8;
+    font-weight: 600;
     margin-top: 10px;
     font-size: 1.1rem;
 }
@@ -326,7 +329,8 @@ h1 {
 .empty-state {
     text-align: center;
     padding: 40px;
-    color: #475569;
+    color: #94a3b8;
+    font-weight: 600;
 }
 .empty-state .icon {
     font-size: 3rem;
@@ -334,8 +338,9 @@ h1 {
 }
 
 .question-counter {
-    color: #475569;
+    color: #94a3b8;
     font-size: 0.9rem;
+    font-weight: 700;
     margin-bottom: 8px;
 }
 /* Theme switcher */
@@ -397,7 +402,8 @@ html[data-theme="light"] .subtitle,
 html[data-theme="light"] .question-counter,
 html[data-theme="light"] .section-title,
 html[data-theme="light"] .empty-state {
-    color: #64748b !important;
+    color: #334155 !important;
+    font-weight: 700;
 }
 
 html[data-theme="light"] .card,
@@ -417,7 +423,8 @@ html[data-theme="light"] .subject-card:hover {
 html[data-theme="light"] .question-text,
 html[data-theme="light"] .question-item p,
 html[data-theme="light"] .form-group label {
-    color: #334155 !important;
+    color: #1e293b !important;
+    font-weight: 650;
 }
 
 html[data-theme="light"] .form-group input,
@@ -434,7 +441,8 @@ html[data-theme="light"] .pass-box input {
 html[data-theme="light"] .option-btn {
     background: rgba(255,255,255,0.88);
     border-color: rgba(148,163,184,0.42);
-    color: #334155;
+    color: #1e293b;
+    font-weight: 700;
 }
 
 html[data-theme="light"] .option-btn:hover {
@@ -472,7 +480,7 @@ html[data-theme="light"] .btn-secondary,
 html[data-theme="light"] .back-btn,
 html[data-theme="light"] .role-admin {
     background: rgba(255,255,255,0.78) !important;
-    color: #475569 !important;
+    color: #1e293b !important;
     border-color: rgba(148,163,184,0.35) !important;
 }
 
@@ -507,7 +515,8 @@ html[data-theme="light"] .flag-btn,
 html[data-theme="light"] .note-btn {
     background: rgba(255,255,255,0.78);
     border-color: rgba(148,163,184,0.55);
-    color: #64748b;
+    color: #334155;
+    font-weight: 700;
 }
 
 html[data-theme="light"] .theme-toggle {
@@ -525,3 +534,65 @@ html[data-theme="light"] .theme-toggle {
         font-size: 0.82rem;
     }
 }
+/* Stronger readable text */
+.subtitle,
+.empty-state,
+.score-box p {
+    font-weight: 600;
+}
+
+.question-counter {
+    font-weight: 700;
+}
+
+.option-btn {
+    font-weight: 600;
+}
+
+/* Stronger readable text for light theme */
+html[data-theme="light"] body {
+    color: #0f172a;
+}
+
+html[data-theme="light"] h1,
+html[data-theme="light"] .modal h2,
+html[data-theme="light"] .subject-card h3 {
+    color: #020617 !important;
+    font-weight: 800;
+}
+
+html[data-theme="light"] .subtitle,
+html[data-theme="light"] .question-counter,
+html[data-theme="light"] .section-title,
+html[data-theme="light"] .empty-state,
+html[data-theme="light"] .score-box p {
+    color: #1e293b !important;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .question-text,
+html[data-theme="light"] .question-item p,
+html[data-theme="light"] .form-group label {
+    color: #0f172a !important;
+    font-weight: 650;
+}
+
+html[data-theme="light"] .option-btn {
+    color: #0f172a !important;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .btn-secondary,
+html[data-theme="light"] .back-btn,
+html[data-theme="light"] .role-admin,
+html[data-theme="light"] .flag-btn,
+html[data-theme="light"] .note-btn {
+    color: #0f172a !important;
+    font-weight: 700;
+}
+
+html[data-theme="light"] .theme-toggle {
+    color: #020617 !important;
+    font-weight: 800;
+}
+
