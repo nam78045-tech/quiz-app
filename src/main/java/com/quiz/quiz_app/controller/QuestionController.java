@@ -36,4 +36,10 @@ public class QuestionController {
         String correctAnswer = body.get("correctAnswer");
         return ResponseEntity.ok(service.update(id, rawText, correctAnswer));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        service.delete(id);
+        return ResponseEntity.noContent().build();
+    }
 }

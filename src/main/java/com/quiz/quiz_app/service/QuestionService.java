@@ -45,4 +45,8 @@ public class QuestionService {
             .orElseThrow(() -> new RuntimeException("Question not found"));
         return questionRepo.save(parseAndFill(q, rawText, correctAnswer));
     }
-}
+
+    public void delete(Long id) {
+        questionRepo.deleteById(id);
+    }
+} 
